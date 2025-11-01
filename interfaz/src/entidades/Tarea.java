@@ -1,4 +1,4 @@
-package gui;
+package entidades;
 
 import java.util.HashSet;
 

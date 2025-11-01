@@ -1,7 +1,9 @@
 package gui;
 
+import entidades.Estado;
 import entidades.HomeSolution;
 import entidades.Proyecto;
+import entidades.Tupla;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

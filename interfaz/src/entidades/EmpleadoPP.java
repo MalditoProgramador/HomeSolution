@@ -1,4 +1,4 @@
-package gui;
+package entidades;
 
 public class EmpleadoPP extends Empleado{
 	

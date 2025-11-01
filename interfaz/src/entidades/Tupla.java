@@ -1,4 +1,4 @@
-package gui;
+package entidades;
 
 public class Tupla <T1,T2>{
     private T1 valor1;

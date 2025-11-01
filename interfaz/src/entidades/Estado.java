@@ -1,4 +1,4 @@
-package gui;
+package entidades;
 
 public class Estado {
     public static final String activo="ACTIVO";

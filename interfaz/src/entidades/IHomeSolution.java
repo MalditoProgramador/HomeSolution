@@ -1,4 +1,4 @@
-package gui;
+package entidades;
 
 import java.util.List;
 
@@ -34,6 +34,9 @@ public interface IHomeSolution {
      */
     public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException;
 
+    
+    
+    
     /**
      * Registra un empleado con nombre, valor y categoría.     *
      * @param nombre Nombre del empleado.
