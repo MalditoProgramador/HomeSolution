@@ -21,7 +21,7 @@ public class Empleado {
 		}
 		
 		this.cantDeRetrasos = 0;
-		this.disponibilidad = "Libre";
+		this.disponibilidad = "Disponible";
 		this.legajo = legajo;
 		this.nombre = nombre;
 		this.costoPorHora = costoPorHora;
@@ -70,5 +70,18 @@ public class Empleado {
 	@Override
 	public String toString() {
 		return ("Empleado: "+ nombre + "Legajo: "+ legajo);
+	}
+	
+	public void cambiarDisponibilidad() {
+		if(this.disponibilidad.equals("Disponible")) {
+			this.disponibilidad = "No disponible";
+		}
+		else if(this.disponibilidad.equals("No disponible")) {
+			this.disponibilidad = "Disponible";
+		}
+	}
+	
+	public void sumarCantRetrasos() {
+		this.cantDeRetrasos += 1;
 	}
 }
