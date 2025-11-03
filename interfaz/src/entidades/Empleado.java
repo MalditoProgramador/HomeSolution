@@ -23,7 +23,7 @@ public abstract class Empleado {
 	}
 	@Override
 	public String toString() {
-		return ("Empleado: "+ nombre + "Legajo: "+ legajo);
+		return "" + legajo;
 	}
 	
 	public void cambiarDisponibilidad() {

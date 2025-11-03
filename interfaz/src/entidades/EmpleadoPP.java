@@ -22,7 +22,7 @@ public class EmpleadoPP extends Empleado{
 
 	@Override
 	public String toString() {
-		return ("Empleado: "+ nombre + "Legajo: "+ legajo + "Categoria: " + categoria);
+		return "" + legajo ;
 	}
 
 	public double getValorDia() {

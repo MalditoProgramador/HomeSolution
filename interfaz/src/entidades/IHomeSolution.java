@@ -237,7 +237,7 @@ public interface IHomeSolution {
      * @param legajo Legajo del empleado.
      * @return true si tiene retrasos, false en caso contrario.
      */
-    public boolean tieneRestrasos(String legajo) ;
+    public boolean tieneRetrasos(Integer legajo) ;
 
     /**
      * Devuelve la lista de todos los empleados registrados.

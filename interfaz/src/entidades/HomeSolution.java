@@ -8,7 +8,7 @@ import java.util.List;
 public class HomeSolution implements IHomeSolution {
 	private HashMap <Integer, Empleado> Empleados;
 	private HashMap <Integer, Proyecto> Proyectos;
-	private HashMap <String, Tarea> Tareas;
+	// private HashMap <String, Tarea> Tareas;
 	private HashMap <Integer, Tarea> tareaPorLegajo;
 	private HashSet <Tupla <Integer, Integer>> costoProyecto;
 	private int cantProyecto;
@@ -19,7 +19,7 @@ public class HomeSolution implements IHomeSolution {
 
 		this.Empleados = new HashMap<>();
 		this.Proyectos = new HashMap<>();
-		this.Tareas = new HashMap<>();
+		// this.Tareas = new HashMap<>();
 		this.tareaPorLegajo = new HashMap<>();
 		this.costoProyecto = new HashSet<>();
 		this.cantProyecto = 0;
@@ -95,9 +95,10 @@ public class HomeSolution implements IHomeSolution {
 		Tarea t = tareasProyecto.get(titulo);
 		for(Empleado e : Empleados.values()) {
 			if(e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
-				p.agregarEmpleado(e.getNombre());
+				p.agregarEmpleado(e.getLegajo());
 				t.cambiarResponsable(e);
-				break;
+				tareaPorLegajo.put(e.getLegajo(), t);
+				return;
 			}
 		}
 		throw new Exception("No hay empleados Disponibles");
@@ -109,13 +110,12 @@ public class HomeSolution implements IHomeSolution {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		
-		int menor = 100;
-		Empleado elegido = null;
+
+		Empleado elegido = Empleados.get(1);
 		
 		
 		for(Empleado e : Empleados.values()) {
-			if(e.getCantRetrasos() <= menor && e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
-				menor = e.getCantRetrasos();
+			if(e.getCantRetrasos() <= elegido.getCantRetrasos() && e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
 				elegido = e;
 			}
 		}
@@ -134,8 +134,9 @@ public class HomeSolution implements IHomeSolution {
 		
 		Tarea t = tareasProyecto.get(titulo);
 		
-		p.agregarEmpleado(elegido.getNombre());
+		p.agregarEmpleado(elegido.getLegajo());
 		t.cambiarResponsable(elegido);
+		tareaPorLegajo.put(elegido.getLegajo(), t);
 	}
 
 	@Override
@@ -232,9 +233,12 @@ public class HomeSolution implements IHomeSolution {
 		}
 		Tarea t = tareasProyecto.get(titulo);
 		
-		Empleado e = Empleados.get(t.getLegajoEmpleado());
-		this.asignarResponsableEnTarea(numero, titulo);
-		e.cambiarDisponibilidad();
+		Empleado anterior = Empleados.get(t.getLegajoEmpleado());
+		anterior.cambiarDisponibilidad();
+		tareaPorLegajo.replace(legajo, t);
+		Empleado nuevo = Empleados.get(legajo);
+		nuevo.cambiarDisponibilidad();
+
 	}
 
 	@Override
@@ -257,8 +261,7 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-		public double costoProyecto() {
-	}
+		public double costoProyecto() {};
 	
 	
 	public double costoProyecto(Integer numero) {
@@ -366,25 +369,64 @@ public class HomeSolution implements IHomeSolution {
 	@Override
 	public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {
 		
+		List<Tupla<Integer,String>> empPro = new ArrayList<>();
+		
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 		Proyecto p = Proyectos.get(numero);
 		
-		for (String empleado : p.getEmpleadosActivos()) {
-		    System.out.println("Empleado activo: " + empleado);
-		}
 		
-		return null;
+		for (Integer legajoE : p.getEmpleadosActivos()) {
+				Empleado e = Empleados.get(legajoE);
+				Tupla<Integer, String> tp = new Tupla<>(legajoE, e.getNombre());
+				empPro.add(tp);
+			}
+		return empPro;
 	}
 
 	@Override
 	public Object[] tareasProyectoNoAsignadas(Integer numero) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		
+		    if (Proyectos.get(numero) == null) {
+		        throw new IllegalArgumentException("No existe proyecto con esa ID");
+		    }
+
+		    Proyecto p = Proyectos.get(numero);
+		    HashMap<String, Tarea> tareasProyecto = p.getTareas();
+
+		
+		    List<Tarea> tareasNoAsignadas = new ArrayList<>();
+
+		    for (Tarea t : tareasProyecto.values()) {
+		        if (t.getLegajoEmpleado() == 0) {
+		            tareasNoAsignadas.add(t);
+		        }
+		    }
+
+		  
+		    return tareasNoAsignadas.toArray();
+		}
 
 	@Override
 	public Object[] tareasDeUnProyecto(Integer numero) {
-		// TODO Auto-generated method stub
-		return null;
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
+		Proyecto p = Proyectos.get(numero);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		
+		int cantTareas = tareasProyecto.values().size();
+		Object[] tareasAsignadas = new Object[cantTareas];
+		int cont =0;
+		
+		for(Tarea t: tareasProyecto.values()) {
+			tareasAsignadas[cont] = t;
+			cont +=1;
+		}
+		
+		return tareasAsignadas;
 	}
 
 	@Override
@@ -395,11 +437,9 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-	public boolean tieneRestrasos(String legajo) {
+    public boolean tieneRetrasos(Integer legajo) {
 		
-		Integer l = Integer.parseInt(legajo);
-		
-		Empleado e = Empleados.get(l);
+		Empleado e = Empleados.get(legajo);
 		
 		if(e.getCantRetrasos() > 0) {
 			return true;
@@ -409,6 +449,7 @@ public class HomeSolution implements IHomeSolution {
 
 	@Override
 	public List<Tupla<Integer, String>> empleados() {
+		
 		List<Tupla<Integer, String>> lista = new ArrayList<>();
 		
 		for(Empleado e : Empleados.values()) {
@@ -425,5 +466,7 @@ public class HomeSolution implements IHomeSolution {
 		
 		return p.toString();
 	}
+	
+	
 	
 }

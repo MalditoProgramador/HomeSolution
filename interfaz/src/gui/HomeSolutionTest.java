@@ -1,4 +1,4 @@
-package test;
+package gui;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -257,8 +257,8 @@ public class HomeSolutionTest {
         int total=0;
         for(Tupla<Integer,String> emp: empleados)
         {
-            total=homeSolution.tieneRestrasos(emp.getValor1())?total+1:total;
+            total=homeSolution.tieneRetrasos(emp.getValor1())?total+1:total;
         }
-        return total;
+       return total; 
     }
 }

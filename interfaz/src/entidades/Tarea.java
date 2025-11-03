@@ -8,7 +8,7 @@ public class Tarea {
 	private String descripcion;
 	private double diasDeRetraso;
 	private String estado;
-	private HashSet<String> historialEmpleado;
+	private HashSet<Integer> historialEmpleado;
 	private int legajoEmpleado;
 	private double dias;
 	
@@ -19,7 +19,7 @@ public class Tarea {
 		}
 		
 		
-		if(legajoEmpleado <= 0) {
+		if(legajoEmpleado < 0) {
 			throw new IllegalArgumentException("El legajo debe ser mayor a 0");
 		}
 		
@@ -66,7 +66,7 @@ public class Tarea {
 		return legajoEmpleado;
 	}
 
-	public HashSet<String> getHistorialEmpleado() {
+	public HashSet<Integer> getHistorialEmpleado() {
 		return historialEmpleado;
 	}
 	
@@ -92,7 +92,11 @@ public class Tarea {
 	}
 	
 	public void cambiarResponsable(Empleado e) {
-		historialEmpleado.add(e.getNombre());
+		historialEmpleado.add(e.getLegajo());
 		this.legajoEmpleado = e.getLegajo();
+	}
+	
+	public void sacarResponsable() {
+		this.legajoEmpleado = 0;
 	}
 }

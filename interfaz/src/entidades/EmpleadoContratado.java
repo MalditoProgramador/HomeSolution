@@ -22,7 +22,7 @@ public class EmpleadoContratado extends Empleado {
 
 	@Override
 	public String toString() {
-		return ("Empleado: "+ nombre + "Legajo: "+ legajo);
+		return "" + legajo;
 	}
 	@Override
 	public void cambiarDisponibilidad() {

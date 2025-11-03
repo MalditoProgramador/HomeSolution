@@ -11,13 +11,13 @@ public class Proyecto {
 	private String[] cliente;
 	private String direccion;
 	private HashMap<String, Tarea> Tareas;
-	private HashSet <String> EmpleadosActivos;
+	private HashSet <Integer> EmpleadosActivos;
 	private LocalDate fechaInicio;
 	private LocalDate fechaEstimada;
 	private LocalDate fechaFinal;
 	private double costoFinal;
 	private String estado;
-	private HashSet<String> historialEmpleados;
+	private HashSet<Integer> historialEmpleados;
 	
 
 	public Proyecto(int id, String[] cliente, String direccion, String inicio, String estimada, HashMap<String, Tarea>Tareas) {
@@ -35,15 +35,11 @@ public class Proyecto {
 			throw new IllegalArgumentException("Direccion no debe ser vacio");
 		}
 		
-		if(costoFinal <= 0) {
+		if(costoFinal < 0) {
 			throw new IllegalArgumentException("Costo no debe ser menor a 0");
 		}
 		
-		
-		if (!estado.equalsIgnoreCase("Finalizado") && !estado.equalsIgnoreCase("No finalizado") && !estado.equalsIgnoreCase("Pendiente")) {
-		    throw new IllegalArgumentException("El Estado debe ser 'Finalizado', 'No finalizado' o 'Pendiente'");
-		}
-		
+
 		LocalDate fecha1 = LocalDate.parse(inicio);
 	    LocalDate fecha2 = LocalDate.parse(estimada);
 		
@@ -75,12 +71,9 @@ public class Proyecto {
 				+ fechaFinal + ", Estado: " + estado;
 	}
 
-	public void cambiarEstado(String estadoC) {
-		if (!estadoC.equalsIgnoreCase("Finalizado") && !estadoC.equalsIgnoreCase("No finalizado") && !estadoC.equalsIgnoreCase("Pendiente")) {
-			throw new IllegalArgumentException("El Estado debe ser 'Finalizado', 'No finalizado' o 'Pendiente'");
-		} else {
-			this.estado = estadoC;
-		}
+	public void cambiarEstado(String fin) {
+		this.estado = "Finalizado";
+		this.fechaFinal = LocalDate.parse(fin);
 
 	}
 
@@ -94,9 +87,9 @@ public class Proyecto {
 		sumarDias(dias);
 	}
 
-	public void agregarEmpleado(String nuevoNombre) {
-		EmpleadosActivos.add(nuevoNombre);
-		historialEmpleados.add(nuevoNombre);
+	public void agregarEmpleado(Integer legajo) {
+		EmpleadosActivos.add(legajo);
+		historialEmpleados.add(legajo);
 	}
 	
 	public void sumarDias(double dias) {
@@ -117,7 +110,7 @@ public class Proyecto {
 	}
 
 	
-	public HashSet<String> getEmpleadosActivos() {
+	public HashSet<Integer> getEmpleadosActivos() {
 	    return EmpleadosActivos;
 	}
 
