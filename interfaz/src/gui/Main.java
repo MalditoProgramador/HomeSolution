@@ -19,3 +19,4 @@ public class Main {
         PanelManager panelManager=new PanelManager(homeSolution);
         }
     }
+

@@ -6,13 +6,14 @@ public class Tarea {
 	
 	private String titulo;
 	private String descripcion;
-	private int diasDeRetraso;
+	private double diasDeRetraso;
 	private int costo;
 	private String estado;
 	private HashSet<String> historialEmpleado;
 	private int legajoEmpleado;
+	private double dias;
 	
-	public Tarea(String titulo, String descripcion, int costo, int legajoEmpleado) {
+	public Tarea(String titulo, String descripcion, int costo, int legajoEmpleado, double dias) {
 		
 		if(titulo.isEmpty()) {
 			throw new IllegalArgumentException("Titulo no debe ser vacío");
@@ -30,6 +31,10 @@ public class Tarea {
 			throw new IllegalArgumentException("El legajo debe ser mayor a 0");
 		}
 		
+		if(dias <= 0) {
+			throw new IllegalArgumentException("Dias no puede ser menor a 0");
+		}
+		
 		this.titulo = titulo;
 		this.descripcion = descripcion;
 		this.diasDeRetraso = 0;
@@ -37,6 +42,7 @@ public class Tarea {
 		this.estado = "No finalizado";
 		this.historialEmpleado = new HashSet<>();
 		this.legajoEmpleado = legajoEmpleado;
+		this.dias = dias;
 	}
 
 	@Override
@@ -61,11 +67,11 @@ public class Tarea {
 		this.descripcion = descripcion;
 	}
 
-	public int getDiasDeRetraso() {
+	public double getDiasDeRetraso() {
 		return diasDeRetraso;
 	}
 
-	public void setDiasDeRetraso(int diasDeRetraso) {
+	public void setDiasDeRetraso(double diasDeRetraso) {
 		this.diasDeRetraso = diasDeRetraso;
 	}
 
@@ -101,8 +107,8 @@ public class Tarea {
 		this.historialEmpleado = historialEmpleado;
 	}
 	
-	public void sumarDiasDeRetrasos() {
-		this.diasDeRetraso += 1;
+	public void sumarDiasDeRetrasos(double dias) {
+		this.diasDeRetraso += dias;
 	}
 	
 	public void cambiarEstado() {
@@ -112,5 +118,10 @@ public class Tarea {
 		else if(this.estado.equals("No finalizado")) {
 			this.estado = "Finalizado";
 		}
+	}
+	
+	public void cambiarResponsable(Empleado e) {
+		historialEmpleado.add(e.getNombre());
+		this.legajoEmpleado = e.getLegajo();
 	}
 }

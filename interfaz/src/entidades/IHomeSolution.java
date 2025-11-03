@@ -25,7 +25,8 @@ public interface IHomeSolution {
     // ============================================================
     // REGISTRO DE EMPLEADOS
     // ============================================================
-
+	
+	
     /**
      * Registra un empleado con un nombre y un valor base por hora.     *
      * @param nombre Nombre del empleado.
