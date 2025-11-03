@@ -2,6 +2,7 @@ package entidades;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -9,7 +10,7 @@ public class Proyecto {
 	private int id;
 	private String[] cliente;
 	private String direccion;
-	private String[] Tareas;
+	private HashMap<String, Tarea> Tareas;
 	private HashSet <String> EmpleadosActivos;
 	private LocalDate fechaInicio;
 	private LocalDate fechaEstimada;
@@ -19,18 +20,18 @@ public class Proyecto {
 	private HashSet<String> historialEmpleados;
 	
 
-	public Proyecto(int id, String[] cliente, String direccion, String inicio, String estimada, String[] Tareas, double costoFinal) {
+	public Proyecto(int id, String[] cliente, String direccion, String inicio, String estimada, HashMap<String, Tarea>Tareas) {
 
 		if(id <= 0) {
 			throw new IllegalArgumentException("ID no debe ser menor a 0");
 		}
 		
-		if(cliente == null) {
+		if(cliente == null || cliente.length == 0) {
 			throw new IllegalArgumentException("Cliente no debe ser vacio");
 		}
 		
 		
-		if(direccion.isEmpty()) {
+		if(direccion.isEmpty() || direccion == null ) {
 			throw new IllegalArgumentException("Direccion no debe ser vacio");
 		}
 		
@@ -58,7 +59,7 @@ public class Proyecto {
 		this.id = id;
 		this.cliente = cliente;
 		this.direccion = direccion;
-		this.Tareas = new HashSet<>();
+		this.Tareas = Tareas;
 		this.EmpleadosActivos = new HashSet<>();    
 		this.fechaInicio = fecha1;
 		this.fechaEstimada = fecha2;
@@ -87,9 +88,9 @@ public class Proyecto {
 		return this.costoFinal;
 	}
 	
-	public void agregarTarea(String tarea, double dias) {
-		Tareas = Arrays.copyOf(Tareas, Tareas.length + 1);
-		Tareas[Tareas.length - 1] = tarea;
+	public void agregarTarea(String tareaTitulo,String descripcion, double dias) {
+		Tarea t = new Tarea(tareaTitulo,descripcion,dias);
+		Tareas.put(tareaTitulo, t);
 		sumarDias(dias);
 	}
 
@@ -114,8 +115,13 @@ public class Proyecto {
 	public String getDomicilio() {
 		return this.direccion;
 	}
+
 	
 	public HashSet<String> getEmpleadosActivos() {
 	    return EmpleadosActivos;
+	}
+
+	public HashMap<String, Tarea> getTareas() {
+		 return Tareas;
 	}
 }

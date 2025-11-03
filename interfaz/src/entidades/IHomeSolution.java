@@ -159,6 +159,8 @@ public interface IHomeSolution {
      * @return Costo total acumulado.
      */
     public double costoProyecto() ;
+    
+    public double costoProyecto(Integer numero);
 
     /**
      * Devuelve una lista de proyectos finalizados (número y domicilio).

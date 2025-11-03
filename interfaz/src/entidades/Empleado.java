@@ -12,10 +12,10 @@ public abstract class Empleado {
 		if(legajo <= 0) {
 			throw new IllegalArgumentException("El legajo debe ser mayor a 0");
 		}
-		if(nombre.isEmpty()) {
+		if(nombre.isBlank() || nombre == null) {
 			throw new IllegalArgumentException("Nombre no puede estar vacío");
 		}
-
+		
 		this.cantDeRetrasos = 0;
 		this.disponibilidad = "Disponible";
 		this.legajo = legajo;

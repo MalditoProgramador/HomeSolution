@@ -27,7 +27,8 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-	public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {
+	public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {   //Throws exception en el constructor de empleado
+	
 		int legajo = cantEmpleados + 1;
 		this.cantEmpleados = legajo;
 		EmpleadoContratado e = new EmpleadoContratado(legajo, nombre, valor);
@@ -35,7 +36,7 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-	public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException {
+	public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException { //Throws exception en el constructor de EmpleadoPP y Empleado
 		int legajo = cantEmpleados + 1;
 		this.cantEmpleados = legajo;
 		EmpleadoPP e = new EmpleadoPP(legajo, nombre, valor, categoria);
@@ -43,40 +44,70 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-	public void registrarProyecto(String[] titulos, String[] descripcion, double[] dias, String domicilio,
+	public void registrarProyecto(String[] titulos, String[] descripcion, double[] dias, String domicilio,	//Throws exception en el constructor de empleado
 			String[] cliente, String inicio, String fin) throws IllegalArgumentException {
-			
-			int id = cantProyecto + 1;
-			this.cantProyecto = id;
-			
-			Integer costo = 0;
-			
-			for(String t : titulos) {	
-				(Tareas.get(titulos)).getCosto();
-				costo += (Tareas.get(titulos)).getCosto();;
+		
+			if(titulos.length == 0 || titulos == null) {
+				throw new IllegalArgumentException("Titulos de las tareas no puede ser null ni vacios");
 			}
 			
-			costoProyecto.add(new Tupla<>(id, costo));
-			Proyecto p = new Proyecto(id, cliente, domicilio, inicio, fin, titulos, costo);
+			if(descripcion == null) {
+				throw new IllegalArgumentException("Las descripciones no pueden ser nulas");
+			}
+			
+			if(dias.length == 0 || dias == null) {
+				throw new IllegalArgumentException("Dias no puede estar vacios o ser nulo");
+			}
+			
+			Integer id = cantProyecto + 1;
+			this.cantProyecto = id;
+			
+		
+			HashMap<String, Tarea> Tareas = new HashMap<>();
+			for(int i = 0; i< titulos.length ; i++) {	
+				Tarea tProyecto = new Tarea(titulos[i],descripcion[0],dias[0]);
+				Tareas.put(titulos[i], tProyecto);
+				}
+
+			Proyecto p = new Proyecto(id, cliente, domicilio, inicio, fin, Tareas);
+			Proyectos.put(id, p);
 	}
 
 	@Override
 	public void asignarResponsableEnTarea(Integer numero, String titulo) throws Exception {
 		
-		Proyecto p = Proyectos.get(numero);	
-		Tarea t = Tareas.get(titulo);
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 		
+		Proyecto p = Proyectos.get(numero);	
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("Tarea no esta en proyecto");
+		}
+		
+		if(tareasProyecto.get(titulo).getLegajoEmpleado() != 0) {
+			throw new IllegalArgumentException("Tarea ya esta Asignada");
+		}
+		
+		Tarea t = tareasProyecto.get(titulo);
 		for(Empleado e : Empleados.values()) {
 			if(e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
 				p.agregarEmpleado(e.getNombre());
 				t.cambiarResponsable(e);
 				break;
 			}
-		}			
+		}
+		throw new Exception("No hay empleados Disponibles");
 	}
 
 	@Override
 	public void asignarResponsableMenosRetraso(Integer numero, String titulo) throws Exception {
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 		
 		int menor = 100;
 		Empleado elegido = null;
@@ -90,7 +121,18 @@ public class HomeSolution implements IHomeSolution {
 		}
 		
 		Proyecto p = Proyectos.get(numero);	
-		Tarea t = Tareas.get(titulo);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("Tarea no esta en proyecto");
+		}
+		
+		if(tareasProyecto.get(titulo).getLegajoEmpleado() != 0) {
+			throw new IllegalArgumentException("Tarea ya esta Asignada");
+		}
+		
+		Tarea t = tareasProyecto.get(titulo);
 		
 		p.agregarEmpleado(elegido.getNombre());
 		t.cambiarResponsable(elegido);
@@ -100,8 +142,28 @@ public class HomeSolution implements IHomeSolution {
 	public void registrarRetrasoEnTarea(Integer numero, String titulo, double cantidadDias)
 			throws IllegalArgumentException {
 		
-		Proyecto p = Proyectos.get(numero);
-		Tarea t = Tareas.get(titulo);
+		
+		
+		if(cantidadDias <= 0) {
+			throw new IllegalArgumentException("Dias no puede ser menor a 0");
+		}
+		
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
+		
+		
+		Proyecto p = Proyectos.get(numero);	
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		
+
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		}
+
+		
+		Tarea t = tareasProyecto.get(titulo);
 		
 		t.sumarDiasDeRetrasos(cantidadDias);
 		p.sumarDias(cantidadDias);
@@ -113,64 +175,119 @@ public class HomeSolution implements IHomeSolution {
 	}
 
 	@Override
-	public void agregarTareaEnProyecto(Integer numero, String titulo, String descripcion, double dias)
+	public void agregarTareaEnProyecto(Integer numero, String titulo, String descripcion, double dias) // titulo,descripcion,dias se encarga el constructor de tarea
 			throws IllegalArgumentException {
+		
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 	
 		Proyecto p = Proyectos.get(numero);
-		
-		p.agregarTarea(titulo, dias);
+		p.agregarTarea(titulo,descripcion, dias);
 		
 	}
 
 	@Override
 	public void finalizarTarea(Integer numero, String titulo) throws Exception {
-		Proyecto p = Proyectos.get(numero);
-		Tarea t = Tareas.get(titulo);
 		
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
+		
+		Proyecto p = Proyectos.get(numero);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		
+
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		}
+		
+		Tarea t = tareasProyecto.get(titulo);
 		t.cambiarEstado();
 	}
 
 	@Override
 	public void finalizarProyecto(Integer numero, String fin) throws IllegalArgumentException {
-		Proyecto p = Proyectos.get(numero);
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 		
+		Proyecto p = Proyectos.get(numero);
 		p.cambiarEstado(fin);
 	}
 
 	@Override
 	public void reasignarEmpleadoEnProyecto(Integer numero, Integer legajo, String titulo) throws Exception {
+		
+		
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
 		Proyecto p = Proyectos.get(numero);
-		Tarea t = Tareas.get(titulo);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		}
+		Tarea t = tareasProyecto.get(titulo);
 		
-		int legajoAnterior = t.getLegajoEmpleado(); 
-		Empleado empleadoAnterior = Empleados.get(legajoAnterior); 
-		empleadoAnterior.cambiarDisponibilidad(); 
-		Empleado e = Empleados.get(legajo);
-		
-		t.cambiarResponsable(e);		
+		Empleado e = Empleados.get(t.getLegajoEmpleado());
+		this.asignarResponsableEnTarea(numero, titulo);
+		e.cambiarDisponibilidad();
 	}
 
 	@Override
 	public void reasignarEmpleadoConMenosRetraso(Integer numero, String titulo) throws Exception {
-		
-		int menor = 100;
-		Empleado elegido = null;
-		
-		for(Empleado e : Empleados.values()) {
-			if(e.getCantRetrasos() <= menor && e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
-				menor = e.getCantRetrasos();
-				elegido = e;
-			}
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
-		reasignarEmpleadoEnProyecto(numero,elegido.getLegajo(), titulo);
+		Proyecto p = Proyectos.get(numero);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
+		if(tareasProyecto.get(titulo) == null) {
+			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		}
+		Tarea t = tareasProyecto.get(titulo);
+		Empleado e = Empleados.get(t.getLegajoEmpleado());
+		
+		this.asignarResponsableMenosRetraso(numero, titulo);
+		e.cambiarDisponibilidad();
+		
 	}
 
 	@Override
-	public double costoProyecto() {
+		public double costoProyecto() {
+	}
+	
+	
+	public double costoProyecto(Integer numero) {
+		double costo = 0;
+		boolean retraso = false;
+		if(Proyectos.get(numero) == null) {
+			throw new IllegalArgumentException("No existe proyecto con esa ID");
+		}
+		Proyecto p = Proyectos.get(numero);
+		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
+		tareasProyecto = p.getTareas();
 		
+		for(Tarea t: tareasProyecto.values()) {
+			Empleado e = Empleados.get(t.getLegajoEmpleado());
+			if(e instanceof EmpleadoContratado) {
+				EmpleadoContratado eC = (EmpleadoContratado) e;
+				costo += (eC.getCostoPorHora() * t.getDias());
+			}else if(e instanceof EmpleadoPP) {
+				EmpleadoPP eC = (EmpleadoPP) e;
+				costo += (eC.getValorDia() * t.getDias());
+			}
+			retraso = retraso || t.huboRetraso();
+		}
 		
-		
-		return double ;
+		if(retraso) {
+			return costo*1.25;
+		}else
+			return costo*1.35;
+
 	}
 
 	@Override
@@ -280,7 +397,9 @@ public class HomeSolution implements IHomeSolution {
 	@Override
 	public boolean tieneRestrasos(String legajo) {
 		
-		Empleado e = Empleados.get(legajo);
+		Integer l = Integer.parseInt(legajo);
+		
+		Empleado e = Empleados.get(l);
 		
 		if(e.getCantRetrasos() > 0) {
 			return true;

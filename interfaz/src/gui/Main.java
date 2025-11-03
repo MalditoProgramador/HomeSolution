@@ -1,6 +1,6 @@
 package gui;
 import entidades.Empleado;
-import entidades.EnpleadoDePlanta;
+import entidades.EmpleadoPP;
 import entidades.HomeSolution;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or

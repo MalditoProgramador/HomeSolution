@@ -7,25 +7,17 @@ public class Tarea {
 	private String titulo;
 	private String descripcion;
 	private double diasDeRetraso;
-	private int costo;
 	private String estado;
 	private HashSet<String> historialEmpleado;
 	private int legajoEmpleado;
 	private double dias;
 	
-	public Tarea(String titulo, String descripcion, int costo, int legajoEmpleado, double dias) {
+	public Tarea(String titulo, String descripcion, double dias) {
 		
 		if(titulo.isEmpty()) {
 			throw new IllegalArgumentException("Titulo no debe ser vacío");
 		}
 		
-		if(descripcion.isEmpty()) {
-			throw new IllegalArgumentException("Descripcion no debe ser vacío");
-		}
-		
-		if(costo <= 0) {
-			throw new IllegalArgumentException("Costo debe ser mayor a 0");
-		}
 		
 		if(legajoEmpleado <= 0) {
 			throw new IllegalArgumentException("El legajo debe ser mayor a 0");
@@ -38,62 +30,37 @@ public class Tarea {
 		this.titulo = titulo;
 		this.descripcion = descripcion;
 		this.diasDeRetraso = 0;
-		this.costo = costo;
 		this.estado = "No finalizado";
 		this.historialEmpleado = new HashSet<>();
-		this.legajoEmpleado = legajoEmpleado;
+		this.legajoEmpleado = 0;
 		this.dias = dias;
 	}
 
 	@Override
 	public String toString() {
-		return "Tarea: "+ titulo + ", " + descripcion + ", Dias De Retraso: " + diasDeRetraso
-				+ ", Estado: " + estado;
+		return "Tarea: "+ titulo;
 	}
 
 	public String getTitulo() {
 		return titulo;
 	}
-
-	public void setTitulo(String titulo) {
-		this.titulo = titulo;
+	
+	public double getDias(){
+		return dias;
 	}
 
 	public String getDescripcion() {
 		return descripcion;
 	}
 
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
-
 	public double getDiasDeRetraso() {
 		return diasDeRetraso;
-	}
-
-	public void setDiasDeRetraso(double diasDeRetraso) {
-		this.diasDeRetraso = diasDeRetraso;
-	}
-
-	public int getCosto() {
-		return costo;
-	}
-
-	public void setCosto(int costo) {
-		this.costo = costo;
 	}
 
 	public String getEstado() {
 		return estado;
 	}
 
-	public void setEstado(String estado) {
-		this.estado = estado;
-	}
-	
-	public void setLegajoEmpleado(int legajoEmpleado) {
-		this.legajoEmpleado = legajoEmpleado;
-	}
 	
 	public int getLegajoEmpleado() {
 		return legajoEmpleado;
@@ -102,10 +69,14 @@ public class Tarea {
 	public HashSet<String> getHistorialEmpleado() {
 		return historialEmpleado;
 	}
-
-	public void setHistorialEmpleado(HashSet<String> historialEmpleado) {
-		this.historialEmpleado = historialEmpleado;
+	
+	public boolean huboRetraso() {
+		if(this.diasDeRetraso > 0) {
+			return true;
+		}
+	return false;
 	}
+
 	
 	public void sumarDiasDeRetrasos(double dias) {
 		this.diasDeRetraso += dias;
