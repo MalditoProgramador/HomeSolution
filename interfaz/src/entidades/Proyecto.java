@@ -1,10 +1,12 @@
 package entidades;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 public class Proyecto {
 	private int id;
@@ -15,7 +17,7 @@ public class Proyecto {
 	private LocalDate fechaInicio;
 	private LocalDate fechaEstimada;
 	private LocalDate fechaFinal;
-	private double costoFinal;
+	private double costo;
 	private String estado;
 	private HashSet<Integer> historialEmpleados;
 	
@@ -35,7 +37,7 @@ public class Proyecto {
 			throw new IllegalArgumentException("Direccion no debe ser vacio");
 		}
 		
-		if(costoFinal < 0) {
+		if(costo < 0) {
 			throw new IllegalArgumentException("Costo no debe ser menor a 0");
 		}
 		
@@ -60,36 +62,43 @@ public class Proyecto {
 		this.fechaInicio = fecha1;
 		this.fechaEstimada = fecha2;
 		this.fechaFinal = fecha2;
-		this.costoFinal = 0;
+		this.costo = 0;
 		this.estado = "PENDIENTE";    
 		this.historialEmpleados = new HashSet<>();
 	}
 
 	@Override
 	public String toString() {
-		return "Proyecto ID: " + id + ", Cliente: " + cliente + ", Inicio: " + fechaInicio + ", Fecha Final: "
+		return "Proyecto ID: " + id + ", Cliente: " + cliente[0]+cliente[1]+cliente[2] + ", Inicio: " + fechaInicio + ", Fecha Final: "
 				+ fechaFinal + ", Estado: " + estado;
 	}
 
-	public void cambiarEstado(String fin) {
-		this.estado = "Finalizado";
+	public void finalizar(String fin) {
+		
+		LocalDate fechaFin = LocalDate.parse(fin);
+		if(fechaFin.isBefore(fechaInicio))
+			throw new IllegalArgumentException("Fecha de finalizacion es anterior a la fecha de inicializacion");
+		
+		for(Tarea t: Tareas.values()) {
+				if(!t.tieneResponsable()) {
+					throw new IllegalArgumentException(t.getTitulo()+ "es una tarea no asignada");
+				}
+				t.finalizarTarea();
+		}
+		
+		cambiarEstado("Finalizado");
 		this.fechaFinal = LocalDate.parse(fin);
-
+		
+		
+		
+		
+		
+		
+		this.EmpleadosActivos.clear();
 	}
 
-	public double valorCostoTotal() {
-		return this.costoFinal;
-	}
-	
-	public void agregarTarea(String tareaTitulo,String descripcion, double dias) {
-		Tarea t = new Tarea(tareaTitulo,descripcion,dias);
-		Tareas.put(tareaTitulo, t);
-		sumarDias(dias);
-	}
-
-	public void agregarEmpleado(Integer legajo) {
-		EmpleadosActivos.add(legajo);
-		historialEmpleados.add(legajo);
+	public double CostoTotal() {
+		return this.costo;
 	}
 	
 	public void sumarDias(double dias) {
@@ -109,12 +118,148 @@ public class Proyecto {
 		return this.direccion;
 	}
 
+	public boolean estaPendiente() {
+		if(estado.equalsIgnoreCase("Pendiente")) {
+			return true;
+		} 
+		return false;
+	}
+	
+	public boolean estaFinalizado() {
+		if(estado.equalsIgnoreCase("Finalizado")) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean estaActivo() {
+		if(estado.equalsIgnoreCase("Activo")) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void cambiarEstado(String e) {
+		
+		if(e.equalsIgnoreCase("Activo")) {
+			this.estado = "Activo";
+		}
+		if(e.equalsIgnoreCase("Pendiente")) {
+			this.estado = "Pendiente";
+		}
+		if(e.equalsIgnoreCase("Finalizado")) {
+			this.estado = "Finalizado";
+		}
+
+	}
+
+	
+	////////////////////////////////////
+	//								  //
+	//      METODOS CON TAREAS        //
+	//								  //
+	////////////////////////////////////
+	
+	public void agregarTarea(String tareaTitulo,String descripcion, double dias) {
+		Tarea t = new Tarea(tareaTitulo,descripcion,dias);
+		Tareas.put(tareaTitulo, t);
+		sumarDias(dias);
+	}
+	
+	public void finalizarTarea(String titulo) {
+		if(!Tareas.containsKey(titulo)) {
+			throw new IllegalArgumentException("Esa Tarea no esta este proyecto");
+		}
+		Tarea t = Tareas.get(titulo);
+		if(t.estaFinalizada()) {
+			throw new IllegalArgumentException("Esta tarea ya esta finalizada");
+		}
+		t.finalizarTarea();
+	}
+	
+	public Tarea obtenerTarea(String titulo) {
+		if(!Tareas.containsKey(titulo) ) {
+			throw new IllegalArgumentException("Tarea no esta en proyecto");
+		}
+		if(Tareas.get(titulo) == null)
+	        throw new IllegalArgumentException("La tarea no existe en este proyecto");
+
+		return Tareas.get(titulo);
+	}
+	
+	public Object[] tareasNoAsignadas() {
+		
+		List<Tarea> tareasNoAsignadas = new ArrayList<>();
+		
+		for (Tarea t : Tareas.values()) {
+	        if (!t.tieneResponsable()) {
+	            tareasNoAsignadas.add(t);
+	        }
+	    }
+	    return tareasNoAsignadas.toArray();
+	}
+
+	public Object[] todasLasTareas() {
+		List<Tarea> tareas = new ArrayList<>();
+		
+		for (Tarea t : Tareas.values()) {   
+	            tareas.add(t);
+
+	    }
+	    return tareas.toArray();
+	}
+	
+	public HashMap<String, Tarea> getTareas() {
+		 return Tareas;
+	}
+	
+
+	
+	//public void finalizarTodasTareas() {}
+
+	////////////////////////////////////
+	//								  //
+	//      METODOS CON EMPLEADOS     //
+	//								  //
+	////////////////////////////////////
+	
+	public void agregarEmpleado(Integer legajo) {
+		EmpleadosActivos.add(legajo);
+		historialEmpleados.add(legajo);
+	}
 	
 	public HashSet<Integer> getEmpleadosActivos() {
 	    return EmpleadosActivos;
 	}
+	
+	public void asignarEmpleadoATarea(Empleado empleado, Tarea tarea){
+		   
+		if (empleado == null || tarea == null) {
+	        throw new IllegalArgumentException("Empleado o tarea nulos");
+	    }
 
-	public HashMap<String, Tarea> getTareas() {
-		 return Tareas;
+	    if (!Tareas.containsKey(tarea.getTitulo())) {
+	        throw new IllegalArgumentException("La tarea no pertenece a este proyecto");
+	    }
+	    if(tarea.tieneResponsable()) {
+	    	throw new IllegalArgumentException("La tarea ya esta asignada");
+	    }
+	    
+
+	    this.agregarEmpleado(empleado.getLegajo());
+	    tarea.cambiarResponsable(empleado);
+
 	}
+	
+	public int empleadoACargo(String titulo) {
+		if(!Tareas.containsKey(titulo)) {
+			throw new IllegalArgumentException(titulo + "no esta en este proyecto");
+		}
+		Tarea t = Tareas.get(titulo);
+		return t.getLegajoEmpleado();
+	}
+	
+	
+	
+	
 }

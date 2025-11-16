@@ -24,15 +24,7 @@ public class EmpleadoContratado extends Empleado {
 	public String toString() {
 		return "" + legajo;
 	}
-	@Override
-	public void cambiarDisponibilidad() {
-		if(this.disponibilidad.equals("Disponible")) {
-			this.disponibilidad = "No disponible";
-		}
-		else if(this.disponibilidad.equals("No disponible")) {
-			this.disponibilidad = "Disponible";
-		}
-	}
+	
 	@Override
 	public void sumarCantRetrasos() {
 		this.cantDeRetrasos += 1;

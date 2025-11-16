@@ -9,7 +9,8 @@ public class Tarea {
 	private double diasDeRetraso;
 	private String estado;
 	private HashSet<Integer> historialEmpleado;
-	private int legajoEmpleado;
+	private int legajoEmpleadoAsignado;
+	private boolean asignada;
 	private double dias;
 	
 	public Tarea(String titulo, String descripcion, double dias) {
@@ -19,7 +20,7 @@ public class Tarea {
 		}
 		
 		
-		if(legajoEmpleado < 0) {
+		if(legajoEmpleadoAsignado < 0) {
 			throw new IllegalArgumentException("El legajo debe ser mayor a 0");
 		}
 		
@@ -32,7 +33,8 @@ public class Tarea {
 		this.diasDeRetraso = 0;
 		this.estado = "No finalizado";
 		this.historialEmpleado = new HashSet<>();
-		this.legajoEmpleado = 0;
+		this.legajoEmpleadoAsignado = 0;
+		this.asignada = false;
 		this.dias = dias;
 	}
 
@@ -63,7 +65,7 @@ public class Tarea {
 
 	
 	public int getLegajoEmpleado() {
-		return legajoEmpleado;
+		return legajoEmpleadoAsignado;
 	}
 
 	public HashSet<Integer> getHistorialEmpleado() {
@@ -82,21 +84,33 @@ public class Tarea {
 		this.diasDeRetraso += dias;
 	}
 	
-	public void cambiarEstado() {
-		if(this.estado.equals("Finalizado")) {
-			this.estado = "No finalizado";
-		}
-		else if(this.estado.equals("No finalizado")) {
+	public void finalizarTarea() {
 			this.estado = "Finalizado";
-		}
+			this.asignada = false;
+			
 	}
 	
 	public void cambiarResponsable(Empleado e) {
 		historialEmpleado.add(e.getLegajo());
-		this.legajoEmpleado = e.getLegajo();
+		this.legajoEmpleadoAsignado = e.getLegajo();
+		this.asignada = true;
 	}
 	
 	public void sacarResponsable() {
-		this.legajoEmpleado = 0;
+		this.legajoEmpleadoAsignado = 0;
+		this.asignada = false;
 	}
+	
+	public boolean tieneResponsable(){
+		if(asignada == true) {
+			return true;
+		} else return false;
+	}
+
+	public boolean estaFinalizada() {
+			if(estado == "Finalizado") { return true;}
+		return false;
+	}
+	
+	
 }

@@ -26,14 +26,28 @@ public abstract class Empleado {
 		return "" + legajo;
 	}
 	
-	public void cambiarDisponibilidad() {
+	public void cambiarOcupado() {
+			if(disponibilidad.equalsIgnoreCase("Disponible")) {
+				disponibilidad = "Ocupado";
+				}
+			else throw new IllegalArgumentException("Empleado ya esta ocupado");
+	}
+	
+	public void cambiarDisponible() {
+		if(disponibilidad.equalsIgnoreCase("Ocupado")) {
+			disponibilidad = "Disponible";
+			}
+		else throw new IllegalArgumentException("Empleado ya esta disponible");
 	}
 	
 	public void sumarCantRetrasos() {
 	}
 	
-	public String getDisponibilidad() {
-		return disponibilidad;
+	public boolean estaDisponible() {
+		if(disponibilidad.equalsIgnoreCase("Disponible")){
+			return true;
+		} else return false;
+		
 	}
 	
 	public String getNombre() {

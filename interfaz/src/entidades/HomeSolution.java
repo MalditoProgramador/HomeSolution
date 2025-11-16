@@ -10,7 +10,7 @@ public class HomeSolution implements IHomeSolution {
 	private HashMap <Integer, Proyecto> Proyectos;
 	// private HashMap <String, Tarea> Tareas;
 	private HashMap <Integer, Tarea> tareaPorLegajo;
-	private HashSet <Tupla <Integer, Integer>> costoProyecto;
+	// private HashSet <Tupla <Integer, Integer>> costoProyecto;
 	private int cantProyecto;
 	private int cantEmpleados;
 	
@@ -21,7 +21,7 @@ public class HomeSolution implements IHomeSolution {
 		this.Proyectos = new HashMap<>();
 		// this.Tareas = new HashMap<>();
 		this.tareaPorLegajo = new HashMap<>();
-		this.costoProyecto = new HashSet<>();
+		// this.costoProyecto = new HashSet<>();
 		this.cantProyecto = 0;
 		this.cantEmpleados = 0;
 	}
@@ -65,7 +65,7 @@ public class HomeSolution implements IHomeSolution {
 		
 			HashMap<String, Tarea> Tareas = new HashMap<>();
 			for(int i = 0; i< titulos.length ; i++) {	
-				Tarea tProyecto = new Tarea(titulos[i],descripcion[0],dias[0]);
+				Tarea tProyecto = new Tarea(titulos[i],descripcion[i],dias[i]);
 				Tareas.put(titulos[i], tProyecto);
 				}
 
@@ -76,95 +76,94 @@ public class HomeSolution implements IHomeSolution {
 	@Override
 	public void asignarResponsableEnTarea(Integer numero, String titulo) throws Exception {
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		
 		Proyecto p = Proyectos.get(numero);	
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
+		Tarea t = p.obtenerTarea(titulo);
 		
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("Tarea no esta en proyecto");
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("El proyecto esta finalizado");
 		}
 		
-		if(tareasProyecto.get(titulo).getLegajoEmpleado() != 0) {
+		
+		if(t.tieneResponsable()) {
 			throw new IllegalArgumentException("Tarea ya esta Asignada");
 		}
 		
-		Tarea t = tareasProyecto.get(titulo);
-		for(Empleado e : Empleados.values()) {
-			if(e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
-				p.agregarEmpleado(e.getLegajo());
-				t.cambiarResponsable(e);
+		for(Empleado e : Empleados.values()) {	 // RECORRE HASHMAP EMPLEADOS DE HOMESOLUTION
+			if(e.estaDisponible()) {
+				e.cambiarOcupado();
+				p.asignarEmpleadoATarea(e, t);
 				tareaPorLegajo.put(e.getLegajo(), t);
+				if(!p.estaActivo()) {
+					p.cambiarEstado("Activo");
+				}
 				return;
 			}
 		}
+		
 		throw new Exception("No hay empleados Disponibles");
 	}
 
 	@Override
 	public void asignarResponsableMenosRetraso(Integer numero, String titulo) throws Exception {
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		
-
-		Empleado elegido = Empleados.get(1);
-		
-		
+		Empleado elegido = null;
+		int cantRetrasos = 999999;
 		for(Empleado e : Empleados.values()) {
-			if(e.getCantRetrasos() <= elegido.getCantRetrasos() && e.getDisponibilidad().equalsIgnoreCase("Disponible")) {
+			if(e.getCantRetrasos() < cantRetrasos && e.estaDisponible()) {
 				elegido = e;
+				cantRetrasos = e.getCantRetrasos();
 			}
 		}
 		
-		Proyecto p = Proyectos.get(numero);	
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
+		Proyecto p = Proyectos.get(numero);
 		
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("Tarea no esta en proyecto");
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
 		}
 		
-		if(tareasProyecto.get(titulo).getLegajoEmpleado() != 0) {
+		if(elegido == null) {
+			throw new Exception("No hay empleados disponibles");
+		}
+		
+		
+		
+		Tarea t = p.obtenerTarea(titulo);
+		if(t.tieneResponsable()) {
 			throw new IllegalArgumentException("Tarea ya esta Asignada");
 		}
 		
-		Tarea t = tareasProyecto.get(titulo);
-		
-		p.agregarEmpleado(elegido.getLegajo());
-		t.cambiarResponsable(elegido);
+		p.asignarEmpleadoATarea(elegido, t);
+		elegido.cambiarOcupado();
 		tareaPorLegajo.put(elegido.getLegajo(), t);
+		p.cambiarEstado("Activo");
 	}
 
 	@Override
 	public void registrarRetrasoEnTarea(Integer numero, String titulo, double cantidadDias)
 			throws IllegalArgumentException {
-		
-		
-		
+
 		if(cantidadDias <= 0) {
 			throw new IllegalArgumentException("Dias no puede ser menor a 0");
 		}
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		
-		
 		Proyecto p = Proyectos.get(numero);	
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
 		
-
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
 		}
-
 		
-		Tarea t = tareasProyecto.get(titulo);
+		Tarea t = p.obtenerTarea(titulo);
 		
 		t.sumarDiasDeRetrasos(cantidadDias);
 		p.sumarDias(cantidadDias);
@@ -179,11 +178,13 @@ public class HomeSolution implements IHomeSolution {
 	public void agregarTareaEnProyecto(Integer numero, String titulo, String descripcion, double dias) // titulo,descripcion,dias se encarga el constructor de tarea
 			throws IllegalArgumentException {
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
-	
 		Proyecto p = Proyectos.get(numero);
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
+		}
 		p.agregarTarea(titulo,descripcion, dias);
 		
 	}
@@ -191,72 +192,78 @@ public class HomeSolution implements IHomeSolution {
 	@Override
 	public void finalizarTarea(Integer numero, String titulo) throws Exception {
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
-		
-		Proyecto p = Proyectos.get(numero);
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
-		
 
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		Proyecto p = Proyectos.get(numero);		
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
 		}
+		p.finalizarTarea(titulo);
 		
-		Tarea t = tareasProyecto.get(titulo);
-		t.cambiarEstado();
+		int legajoEmpleado = p.empleadoACargo(titulo);
+		Empleado e = Empleados.get(legajoEmpleado);
+		e.cambiarDisponible();
+		
 	}
 
 	@Override
 	public void finalizarProyecto(Integer numero, String fin) throws IllegalArgumentException {
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
-		
 		Proyecto p = Proyectos.get(numero);
-		p.cambiarEstado(fin);
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
+		}
+		p.finalizar(fin);
+		for(Integer legajo :p.getEmpleadosActivos()) {
+			Empleado e = Empleados.get(legajo);
+			e.cambiarDisponible();
+		}
+
 	}
 
 	@Override
 	public void reasignarEmpleadoEnProyecto(Integer numero, Integer legajo, String titulo) throws Exception {
 		
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
+		
 		Proyecto p = Proyectos.get(numero);
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
 		}
-		Tarea t = tareasProyecto.get(titulo);
+		Tarea t =p.obtenerTarea(titulo);
 		
 		Empleado anterior = Empleados.get(t.getLegajoEmpleado());
-		anterior.cambiarDisponibilidad();
+		anterior.cambiarDisponible();
+		
 		tareaPorLegajo.replace(legajo, t);
+		
 		Empleado nuevo = Empleados.get(legajo);
-		nuevo.cambiarDisponibilidad();
+		nuevo.cambiarOcupado();
 
 	}
 
 	@Override
 	public void reasignarEmpleadoConMenosRetraso(Integer numero, String titulo) throws Exception {
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		Proyecto p = Proyectos.get(numero);
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
-		if(tareasProyecto.get(titulo) == null) {
-			throw new IllegalArgumentException("esa Tarea no esta en proyecto");
+		if(p.estaFinalizado()) {
+			throw new IllegalArgumentException("Proyecto ya esta finalizado");
 		}
-		Tarea t = tareasProyecto.get(titulo);
+		Tarea t = p.obtenerTarea(titulo);
 		Empleado e = Empleados.get(t.getLegajoEmpleado());
 		
 		this.asignarResponsableMenosRetraso(numero, titulo);
-		e.cambiarDisponibilidad();
+		e.cambiarOcupado();
 		
 	}
 
@@ -264,10 +271,10 @@ public class HomeSolution implements IHomeSolution {
 		public double costoProyecto() {};
 	
 	
-	public double costoProyecto(Integer numero) {
+	public double costoProyecto(Integer numero) {                                  
 		double costo = 0;
 		boolean retraso = false;
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		Proyecto p = Proyectos.get(numero);
@@ -290,7 +297,6 @@ public class HomeSolution implements IHomeSolution {
 			return costo*1.25;
 		}else
 			return costo*1.35;
-
 	}
 
 	@Override
@@ -299,7 +305,7 @@ public class HomeSolution implements IHomeSolution {
 		List<Tupla<Integer, String>> pFinalizados = new ArrayList<>();
 		
 		for(Proyecto p : Proyectos.values()) {
-			if(p.getEstado().equalsIgnoreCase("FINALIZADO")){
+			if(p.estaFinalizado()){
 				Tupla<Integer, String> tp= new Tupla<>(p.getId(), p.getDomicilio());
 				pFinalizados.add(tp);
 			}
@@ -313,8 +319,8 @@ public class HomeSolution implements IHomeSolution {
 		List<Tupla<Integer, String>> pPendientes = new ArrayList<>();
 		
 		for(Proyecto p : Proyectos.values()) {
-			if(p.getEstado().equalsIgnoreCase("PENDIENTE")){
-				Tupla<Integer, String> tp= new Tupla<>(p.getId(), p.getDomicilio());
+			if(p.estaPendiente()){
+				Tupla<Integer, String> tp = new Tupla<>(p.getId(), p.getDomicilio());
 				pPendientes.add(tp);
 			}
 		}
@@ -327,7 +333,7 @@ public class HomeSolution implements IHomeSolution {
 		List<Tupla<Integer, String>> pNoFinalizados = new ArrayList<>();
 		
 		for(Proyecto p : Proyectos.values()) {
-			if(p.getEstado().equalsIgnoreCase("NO FINALIZADO")){
+			if(p.estaActivo()){
 				Tupla<Integer, String> tp= new Tupla<>(p.getId(), p.getDomicilio());
 				pNoFinalizados.add(tp);
 			}
@@ -341,7 +347,7 @@ public class HomeSolution implements IHomeSolution {
 	    List<Empleado> noAsignados = new ArrayList<>();
 
 	    for (Empleado e : Empleados.values()) {
-	        if (e.getDisponibilidad().equalsIgnoreCase("DISPONIBLE")) {
+	        if (e.estaDisponible()) {
 	            noAsignados.add(e);
 	        }
 	    }
@@ -352,7 +358,7 @@ public class HomeSolution implements IHomeSolution {
 	public boolean estaFinalizado(Integer numero) {
 		Proyecto p = Proyectos.get(numero);
 		
-		if(p.getEstado().equalsIgnoreCase("FINALIZADO")) {
+		if(p.estaFinalizado()) {
 			return true;
 		}
 		return false;
@@ -371,7 +377,7 @@ public class HomeSolution implements IHomeSolution {
 		
 		List<Tupla<Integer,String>> empPro = new ArrayList<>();
 		
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		Proyecto p = Proyectos.get(numero);
@@ -388,51 +394,28 @@ public class HomeSolution implements IHomeSolution {
 	@Override
 	public Object[] tareasProyectoNoAsignadas(Integer numero) {
 		
-		    if (Proyectos.get(numero) == null) {
+		    if (!Proyectos.containsKey(numero)) {
 		        throw new IllegalArgumentException("No existe proyecto con esa ID");
 		    }
 
 		    Proyecto p = Proyectos.get(numero);
-		    HashMap<String, Tarea> tareasProyecto = p.getTareas();
-
-		
-		    List<Tarea> tareasNoAsignadas = new ArrayList<>();
-
-		    for (Tarea t : tareasProyecto.values()) {
-		        if (t.getLegajoEmpleado() == 0) {
-		            tareasNoAsignadas.add(t);
-		        }
-		    }
-
-		  
-		    return tareasNoAsignadas.toArray();
+		    return p.tareasNoAsignadas();
 		}
 
 	@Override
+	
+	
 	public Object[] tareasDeUnProyecto(Integer numero) {
-		if(Proyectos.get(numero) == null) {
+		if(!Proyectos.containsKey(numero)) {
 			throw new IllegalArgumentException("No existe proyecto con esa ID");
 		}
 		Proyecto p = Proyectos.get(numero);
-		HashMap<String,Tarea> tareasProyecto = new HashMap<>();
-		tareasProyecto = p.getTareas();
-		
-		int cantTareas = tareasProyecto.values().size();
-		Object[] tareasAsignadas = new Object[cantTareas];
-		int cont =0;
-		
-		for(Tarea t: tareasProyecto.values()) {
-			tareasAsignadas[cont] = t;
-			cont +=1;
-		}
-		
-		return tareasAsignadas;
+		return p.todasLasTareas();
 	}
 
 	@Override
 	public String consultarDomicilioProyecto(Integer numero) {
 		Proyecto p = Proyectos.get(numero);
-
 		return p.getDomicilio();
 	}
 
